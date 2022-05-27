@@ -58,7 +58,7 @@ class BinanceAPI(object):
 		url = "{}/{}".format(BinanceAPI().uri(), query_string)
 		res = requests.get(url)
 		data = res.json()
-
+		# print(data)
 		# {'symbol': 'BTCBUSD', 'price': '29176.84000000'}
 		return data
 

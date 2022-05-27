@@ -41,6 +41,7 @@ def fix_BETH_tokens():
 	# calculates market price for ETH/BUSD
 	aux_token.set_symbol('ETH')
 	aux_token.set_pair('BUSD')
+
 	eth_busd_price = BinanceAPI.market_price(aux_token)['price']
 
 	# calculates virtual market price for BETH/BUSD
