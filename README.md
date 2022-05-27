@@ -12,7 +12,7 @@ Some examples of already implemented metrics:
     - Current price
     - Owning quantity in Spot market
     - Owning quantity in Earn market
-    - Global balance for this token
+    - Global balance for this token, including earn products and spot assets (binance does not show you this information!)
 
 When finished running, this script will serialize your updated token collection with all attributes (for future uses).
 
