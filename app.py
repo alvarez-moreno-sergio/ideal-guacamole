@@ -1,58 +1,62 @@
-import time
+import json
+from lib import Settings
 from lib import Secrets
 from lib import Binance
 from lib import Token
+from lib import TokenManager
 from helpers import BinanceAPI
 
 # Debug
-from test_helper import Mock
+from helpers_test import Mock
 
-holding_tokens = []
-holding_assets = []
-
+tokens = {}
 end_discover_data = False
 
-def save_token(asset):
-	global end_discover_data
-	token = Token(asset['asset'], 'BUSD', asset['totalAmount'])
+def print_assets(assets):
+	for e in assets:
+		print(assets[e])
 
-	if not end_discover_data:
-		holding_assets.append({"asset": asset['asset']})	
-		holding_tokens.append(token)
+def update_flexible_token(asset):
+	token = tokens[asset.symbol()]
+	updated_token = token.update_token(asset)
+	tokens[asset.symbol()] = updated_token
 
-	print(token)
-
+def save_flexible_token(asset):
+	token = Token(asset['asset'], 'BUSD', 0, 'earn', asset['totalAmount'])
+	token.get_price()
+	tokens[asset['asset']] = token
 
 def discover_data(assets=[]):
-	global end_discover_data
-
-	if len(assets) > 0: print(assets)
-	if len(assets) == 0: assets = BinanceAPI.get_all_earn_products()
+	assets = {}
+	if TokenManager.size() == 0:
+		assets = TokenManager.deserialize()
+	else:
+		assets = TokenManager.tokens()
 	
-	# Uncomment to mock Binance response for a shorter debug version
-	# assets = Mock.mock_get_all_earn_products() 
+	print_assets(assets)
+
+	# Switch comments to mock Binance response for a shorter debug version
+	if len(assets) == 0: assets = BinanceAPI.get_all_earn_products()
+	# if len(assets) == 0: assets = Mock.get_all_earn_products()
 
 	for e in assets:
-		asset = BinanceAPI.get_flexible_savings_balance(e['asset'])
+		payload = None
+		if TokenManager.size() > 0:
+			payload = e
+		else:
+			payload = e['asset']
+
+		asset = BinanceAPI.get_flexible_savings_balance(payload)
 		if len(asset) == 0: continue
 
-		save_token(asset[0])
-	end_discover_data = True
+		if isinstance(asset, Token):
+			update_flexible_token(asset[0])
+		else:
+			save_flexible_token(asset[0])
 
-secrets = Secrets.load_secrets()
-binance = Binance(secrets)
-binance.init_api()
+# ============ MAIN ============
 
-
+Settings.initialize_env()
 discover_data()
-print(holding_tokens)
-i = 0
-while (True):
-	i+=1
-	print('======================================')
-	time.sleep(1)
-	discover_data(holding_assets)
-
-print('======================================')
-print(holding_tokens)
-print(holding_assets)
+TokenManager.serialize_to_file(tokens)
+print_assets(tokens)
