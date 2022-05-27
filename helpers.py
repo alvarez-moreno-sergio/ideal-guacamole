@@ -58,8 +58,10 @@ class BinanceAPI(object):
 		url = "{}/{}".format(BinanceAPI().uri(), query_string)
 		res = requests.get(url)
 		data = res.json()
-
+		# print(data)
+		# {'symbol': 'BTCBUSD', 'price': '29176.84000000'}
 		return data
+
 
 	def get_flexible_savings_balance(asset):
 		# asset = token.symbol()
@@ -112,3 +114,15 @@ class BinanceAPI(object):
 	            more_products = False
 
 	    return all_products
+
+	def get_spot_account_information():
+		query_string = "timestamp={}".format(BinanceAPI.timestamp())
+		url = "{}/api/v3/account?{}&signature={}".format(BinanceAPI().uri(), query_string, BinanceAPI.generate_signature(query_string))
+
+		payload = {}
+		headers = BinanceAPI.headers()
+
+		res = requests.request("GET", url, headers=headers, data=payload).text
+		# print(res)
+		result = json.loads(res)
+		return result

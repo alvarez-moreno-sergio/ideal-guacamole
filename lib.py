@@ -40,12 +40,13 @@ class Binance:
 
 
 class Token:
-	def __init__(self, symbol, pair, price, wallet, holding_quantity=0):
+	def __init__(self, symbol, pair, price, spot_quantity=0, earn_quantity=0):
 		self._symbol = symbol
 		self._pair = pair
 		self._price = float(price)
-		self._wallet = wallet
-		self._holding_quantity = holding_quantity
+		self._spot_quantity = spot_quantity
+		self._earn_quantity = earn_quantity
+		self._balance = 0
 
 	def symbol(self):
 		return self._symbol
@@ -53,14 +54,14 @@ class Token:
 	def price(self):
 		return self._price
 
-	def holding_quantity(self):
-		return self._holding_quantity
+	def spot_quantity(self):
+		return self._spot_quantity
+
+	def earn_quantity(self):
+		return self._earn_quantity
 
 	def pair(self):
 		return self._pair
-
-	def wallet(self):
-		return self._wallet
 
 	def get_price(self):
 		market_data = BinanceAPI.market_price(self)
@@ -72,25 +73,42 @@ class Token:
 
 		return self._price
 
-	def balance(self):
-		return float(self._price) * float(self.holding_quantity())
+	def global_balance(self):
+		return float(self._price) * (float(self.spot_quantity()) + float(self.earn_quantity()))
+
+	def spot_balance(self):
+		return float(self._price) * float(self.spot_quantity())
+
+	def earn_balance(self):
+		return float(self._price) * float(self.earn_quantity())
 
 	def set_symbol(self, new):
-		_symbol = new
+		self._symbol = new
 
-	def set_holding_quantity(self, new):
-		_holding_quantity = new
+	def set_price(self, new):
+		self._price = new
+
+	def set_balance(self):
+		self._balance = self.global_balance()
+
+	def set_spot_quantity(self, new):
+		self._spot_quantity = new
+
+	def set_earn_quantity(self, new):
+		self._earn_quantity = new
+
+	def add_spot_quantity(self, new):
+		self.set_spot_quantity(float(self.spot_quantity()) + float(new))
+
+	def add_earn_quantity(self, new):
+		self.set_earn_quantity(float(self.earn_quantity()) + float(new))
 
 	def set_pair(self, new):
-		_pair = new
+		self._pair = new
 
-	def set_wallet(self, new):
-		_wallet = new
-
-	def update_token(self, new):
+	def update_token(self):
 		self.get_price()
-		self.set_wallet(new.wallet())
-		self.set_holding_quantity(new.holding_quantity())
+		self.set_balance()
 
 		return self
 		
@@ -99,9 +117,9 @@ class Token:
 		result += "\"symbol\": \"{}\",".format(self.symbol())
 		result += "\"pair\": \"{}\",".format(self.pair())
 		result += "\"price\": \"{}\",".format(self.price())
-		result += "\"holding_quantity\": \"{}\",".format(self.holding_quantity())
-		result += "\"balance\": \"{}\",".format(self.balance())
-		result += "\"wallet\": \"{}\"".format(self.wallet())
+		result += "\"spot_quantity\": \"{}\",".format(self.spot_quantity())
+		result += "\"earn_quantity\": \"{}\",".format(self.earn_quantity())
+		result += "\"balance\": \"{}\"".format(self.global_balance())
 		result += "}"
 		return result
 
@@ -142,23 +160,18 @@ class TokenManager:
 	#    "BTC":{
 	#       "_symbol":"BTC",
 	#       "_pair":"BUSD",
-	#       "_price":29476.92,
-	#       "_wallet":"earn",
-	#       "_holding_quantity":"0.000000001"
+	#       "_price":28752.78,
+	#       "_spot_quantity":0.000000001,
+	#       "_earn_quantity":0.000000001,
+	#       "_balance":0.00002875278
 	#    },
 	#    "ETH":{
 	#       "_symbol":"ETH",
 	#       "_pair":"BUSD",
-	#       "_price":1829.75,
-	#       "_wallet":"earn",
-	#       "_holding_quantity":"0.000000001"
-	#    },
-	#    "XMR":{
-	#       "_symbol":"XMR",
-	#       "_pair":"BUSD",
-	#       "_price":189.0,
-	#       "_wallet":"earn",
-	#       "_holding_quantity":"0.000000001"
+	#       "_price":1763.12,
+	#       "_spot_quantity":0.000000001,
+	#       "_earn_quantity":0.000000001,
+	#       "_balance":0.00000176312
 	#    }
 	# }
 
@@ -176,19 +189,6 @@ class TokenManager:
 	def size():
 		return len(TokenManager._tokens)
 
-	def toJson(tokens=[]):
-		if len(tokens) == 0: tokens = TokenManager.tokens()
-
-		result = "{"
-		for e in tokens:
-			result += "{} : ".format(e)
-			result += "{"
-			result += tokens[e].__str__()
-			result += "}"
-
-		result = result[:-1] + "]}"
-		return result
-
 	def serialize_to_file(content=None):
 		if content == None: content = TokenManager.tokens()
 
@@ -204,7 +204,9 @@ class TokenManager:
 			
 		if not load == None:
 			for e in load:
-				token = Token(load[e]['_symbol'], load[e]['_pair'], load[e]['_price'], load[e]['_wallet'], load[e]['_holding_quantity'])
+				token = Token(load[e]['_symbol'], load[e]['_pair'], load[e]['_price'], load[e]['_spot_quantity'], load[e]['_earn_quantity'])
 				TokenManager.add(token)
+				# print(token)
+
 		return TokenManager._tokens
 
