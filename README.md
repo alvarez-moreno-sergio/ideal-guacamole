@@ -35,3 +35,8 @@ Please change the following variables:
 - api_secret
 
 You can get your own key at: https://www.binance.com/en/my/settings/api-management
+
+## Running
+To exec this script, use the following command:
+`````
+python3 app.py
