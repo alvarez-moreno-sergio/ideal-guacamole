@@ -1,14 +1,13 @@
-import time
+import json
+from lib import Settings
 from lib import Secrets
 from lib import Binance
 from lib import Token
+from lib import TokenManager
 from helpers import BinanceAPI
 
 # Debug
-from test_helper import Mock
-
-holding_tokens = []
-holding_assets = []
+from helpers_test import Mock
 
 tokens = {}
 
@@ -122,4 +121,3 @@ balances = calculate_balances()
 print("Spot balance: {} €".format(balances[0]))
 print("Earn balance: {} €".format(balances[1]))
 print("Global balance: {} €".format(balances[2]))
-

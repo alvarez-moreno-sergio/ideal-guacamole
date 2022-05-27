@@ -14,8 +14,8 @@ class Secrets:
 	def api_secret(self):
 		return self._api_secret
 
-	def load_secrets():
-		dark_file = open('./config.ini', 'r')
+	def load_secrets(path):
+		dark_file = open(path, 'r')
 		dark = json.loads(dark_file.read())
 		return Secrets(dark)
 
@@ -115,6 +115,20 @@ class Token:
 	def __str__(self):
 		price = self.price()
 
+	def set_pair(self, new):
+		_pair = new
+
+	def set_wallet(self, new):
+		_wallet = new
+
+	def update_token(self, new):
+		self.get_price()
+		self.set_wallet(new.wallet())
+		self.set_holding_quantity(new.holding_quantity())
+
+		return self
+		
+	def __str__(self):
 		result = "{"
 		result += "\"symbol\": \"{}\",".format(self.symbol())
 		result += "\"pair\": \"{}\",".format(self.pair())
@@ -209,5 +223,6 @@ class TokenManager:
 				token = Token(load[e]['_symbol'], load[e]['_pair'], load[e]['_price'], load[e]['_spot_quantity'], load[e]['_earn_quantity'])
 				TokenManager.add(token)
 				# print(token)
+
 		return TokenManager._tokens
 
