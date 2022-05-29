@@ -2,6 +2,7 @@
 
 ## Overview
 This project aims to be fed with your own Binance API and to give you useful metrics. It is intended to be run each 24h or so, to save daily data and be able to generate metrics.
+The information will be saved in your own MongoDB instance.
 
 ## Features
 Some examples of already implemented metrics:
@@ -12,17 +13,22 @@ Some examples of already implemented metrics:
     - Current price
     - Owning quantity in Spot market
     - Owning quantity in Earn market
-    - Global balance for this token, including earn products and spot assets (binance does not show you this information!)
+    - :sparkles: Global balance for this token, including earn products and spot assets
 
-When finished running, this script will serialize your updated token collection with all attributes (for future uses).
+When finished running, this script will save your updated token collection with all attributes in Mongo database.
 
 ## Incoming features
-- Deserialize saved file to obtain metrics 
+- Run queries against db to obtain metrics 
 - Show some useful information like:
   - Percentage of change for spot balance
   - Percentage of change for earn balance
   - Percentage of change for global balance
-  - Percentage of change for global balance for each token
+  - Percentage of change for each token's global balance
+
+## Required Modules
+The following python modules are required. You can install them with `pip install module_name`:
+- python-binance
+- pymongo
 
 ## Configuration
 Your `./secrets.ini` file should look like this:
