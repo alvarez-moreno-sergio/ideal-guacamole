@@ -14,9 +14,15 @@ class Secrets:
 	def api_secret(self):
 		return self._api_secret
 
+	def validate_secrets(dark):
+		if dark['api_key'] == 'Your API KEY here' or dark['api_secret'] == 'Your SECRET key here':
+			raise Exception('secrets.ini has not been set up. Please read https://github.com/alvarez-moreno-sergio/ideal-guacamole/tree/main#configuration')
+
 	def load_secrets(path):
 		dark_file = open(path, 'r')
 		dark = json.loads(dark_file.read())
+
+		Secrets.validate_secrets(dark)
 		return Secrets(dark)
 
 
