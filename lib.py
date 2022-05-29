@@ -38,7 +38,7 @@ class Binance:
 		BinanceAPI().set_api_key(self.api_key())
 		BinanceAPI().set_api_secret(self._secrets.api_secret())
 
-
+import datetime
 class Token:
 	def __init__(self, symbol, pair, price, spot_quantity=0, earn_quantity=0):
 		self._symbol = symbol
@@ -47,6 +47,7 @@ class Token:
 		self._spot_quantity = spot_quantity
 		self._earn_quantity = earn_quantity
 		self._balance = 0
+		self._timestamp = 0
 
 	def symbol(self):
 		return self._symbol
@@ -63,6 +64,9 @@ class Token:
 	def pair(self):
 		return self._pair
 
+	def timestamp(self):
+		return self._timestamp
+
 	def get_price(self):
 		market_data = BinanceAPI.market_price(self)
 
@@ -71,6 +75,7 @@ class Token:
 		else:
 			self._price = float(0)
 
+		self.update_timestamp()
 		return self._price
 
 	def global_balance(self):
@@ -106,6 +111,9 @@ class Token:
 	def set_pair(self, new):
 		self._pair = new
 
+	def update_timestamp(self):
+		self._timestamp = datetime.datetime.now()
+
 	def update_token(self):
 		self.get_price()
 		self.set_balance()
@@ -115,15 +123,25 @@ class Token:
 	def __str__(self):
 		result = "{"
 		result += "\"symbol\": \"{}\",".format(self.symbol())
-		result += "\"pair\": \"{}\",".format(self.pair())
-		result += "\"price\": \"{}\",".format(self.price())
-		result += "\"spot_quantity\": \"{}\",".format(self.spot_quantity())
-		result += "\"earn_quantity\": \"{}\",".format(self.earn_quantity())
-		result += "\"balance\": \"{}\"".format(self.global_balance())
+		result += " \"pair\": \"{}\",".format(self.pair())
+		result += " \"price\": {},".format(self.price())
+		result += " \"spot_quantity\": {},".format(self.spot_quantity())
+		result += " \"earn_quantity\": {},".format(self.earn_quantity())
+		result += " \"balance\": {},".format(self.global_balance())
+		result += " \"timestamp\": \"{}\"".format(self.timestamp())
 		result += "}"
 		return result
 
+	def to_hash(self):
+		return json.loads(self.__str__())
+
+	def cast(obj):
+		result = Token(obj['symbol'], obj['pair'], obj['price'], obj['spot_quantity'], obj['earn_quantity'])
+		result.update_token()
+		return result
+
 import os
+from orm import Mongo
 class Settings:
 	_log_path = './'
 	_log_name = 'log.log'
@@ -135,7 +153,8 @@ class Settings:
 		secrets = Secrets.load_secrets(Settings.secrets_path())
 		binance = Binance(secrets)
 		binance.init_api()
-		TokenManager.deserialize()
+		# TokenManager.deserialize()
+		Mongo.init()
 
 	def log_path():
 		return Settings._log_path + Settings._log_name
@@ -193,8 +212,11 @@ class TokenManager:
 		if content == None: content = TokenManager.tokens()
 
 		with open(Settings.tokens_path(), 'w') as output:
-			content = json.dumps(content, default=lambda x: x.__dict__)
+			content = TokenManager.serialize(content)
 			output.write(content)
+
+	def serialize(content):
+		return json.dumps(content, default=lambda x: x.__dict__)
 
 	def deserialize():
 		load = None

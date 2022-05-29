@@ -5,11 +5,20 @@ from lib import Binance
 from lib import Token
 from lib import TokenManager
 from helpers import BinanceAPI
+from orm import Mongo
 
 # Debug
 from helpers_test import Mock
 
 tokens = {}
+token_collection = None
+
+def init():
+	global token_collection
+
+	Settings.initialize_env()
+	mongo_db = Mongo.client().testing
+	token_collection = mongo_db.tokens
 
 def assets_for_print(assets):
 	result = ''
@@ -52,8 +61,8 @@ def fix_BETH_tokens():
 	tokens['BETH'] = token
 
 def fix_tokens():
-	fix_BETH_tokens()
-	fix_BUSD_tokens()
+	if 'BETH' in tokens: fix_BETH_tokens()
+	if 'BUSD' in tokens: fix_BUSD_tokens()
 
 def save_token(t, quantity, wallet):
 	token = None
@@ -71,7 +80,10 @@ def save_token(t, quantity, wallet):
 	print("Updated {} data for symbol: {}".format(wallet, token.symbol()))
 
 def discover():
+	# Switch comments to use Mock response
+	# spot = Mock.get_spot_account_information()
 	spot = BinanceAPI.get_spot_account_information()
+
 	for e in spot['balances']:
 		quantity = float(e['free']) + float(e['locked'])
 		if quantity == 0: continue
@@ -109,16 +121,17 @@ def convert_balances_to_EUR(balances):
 
 	return result
 
+def print_information():
+	print("==============")
+	print("Here is your updated data: {}".format(assets_for_print(tokens)))
+	print("==============")
 
-Settings.initialize_env()
+	balances = calculate_balances()
+	print("Spot balance: {} €".format(balances[0]))
+	print("Earn balance: {} €".format(balances[1]))
+	print("Global balance: {} €".format(balances[2]))
+
+init()
 discover()
-TokenManager.serialize_to_file(tokens)
-print("==============")
-print("Here is your updated data: {}".format(assets_for_print(tokens)))
-print("==============")
-
-balances = calculate_balances()
-
-print("Spot balance: {} €".format(balances[0]))
-print("Earn balance: {} €".format(balances[1]))
-print("Global balance: {} €".format(balances[2]))
+Mongo.save_dict(token_collection, tokens)
+print_information()
