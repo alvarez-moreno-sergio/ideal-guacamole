@@ -202,9 +202,6 @@ class TokenManager:
 	def add(token):
 		TokenManager._tokens[token.symbol()] = token
 
-	def update(token):
-		TokenManager.add(token)
-
 	def size():
 		return len(TokenManager._tokens)
 

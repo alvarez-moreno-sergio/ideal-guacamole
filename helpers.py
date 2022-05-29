@@ -126,3 +126,21 @@ class BinanceAPI(object):
 
 		# [{'asset': 'LTC', 'free': '0.00000000', 'locked': '0.00000000'}, {'asset': 'ETH', 'free': '0.00000000', 'locked': '0.00000000'}, {'asset': 'NEO', 'free': '0.00000000', 'locked': '0.00000000'}]
 		return result
+
+from financial import Utils
+class UI:
+	def assets_to_print(assets):
+		result = ''
+		for e in assets: result += "\n" + assets[e].__str__()
+
+		return result
+
+	def print_information(tokens):
+		print("==============")
+		print("Here is your updated data: {}".format(UI.assets_to_print(tokens)))
+		print("==============")
+
+		balances = Utils.calculate_balances(tokens)
+		print("Spot balance: {} €".format(balances['spot']))
+		print("Earn balance: {} €".format(balances['earn']))
+		print("Global balance: {} €".format(balances['global']))
