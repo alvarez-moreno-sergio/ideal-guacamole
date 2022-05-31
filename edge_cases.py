@@ -35,8 +35,16 @@ class SpecialTokens:
 
 		TokenManager.add(beth_token)
 
+	def fix_SHIB_tokens(shib_token):
+		TokenManager.delete(shib_token) # SHIB2
+		shib_token.set_symbol('SHIB')
+		shib_token.update_token()
+		TokenManager.add(shib_token) # SHIB
+
+
 	def fix_tokens(tokens):
 		if 'BETH' in tokens: SpecialTokens.fix_BETH_tokens(tokens['BETH'])
 		if 'BUSD' in tokens: SpecialTokens.fix_BUSD_tokens(tokens['BUSD'])
+		if 'SHIB2' in tokens: SpecialTokens.fix_SHIB_tokens(tokens['SHIB2'])
 
 		return TokenManager.tokens()
