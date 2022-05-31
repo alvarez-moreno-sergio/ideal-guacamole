@@ -1,3 +1,4 @@
+import datetime
 import json
 
 from edge_cases import SpecialTokens
@@ -16,6 +17,7 @@ from helpers_test import Mock
 
 tokens = {}
 token_collection = None
+start_date = datetime.date(2021, 11, 1)
 
 def init():
 	global token_collection
@@ -40,6 +42,15 @@ def save_token(t, quantity, wallet):
 	print("Updated {} data for symbol: {}".format(wallet, token.symbol()))
 	TokenManager.add(token)
 
+def calculate_payment_history():
+	card_payment_history = BinanceAPI.get_fiat_payments_history_until_today_from(start_date)
+
+	for e in card_payment_history:
+		if e['cryptoCurrency'] == 'BUSD': continue
+		
+		tokens[e['cryptoCurrency']].add_invested_quantity(e['sourceAmount'])
+		tokens[e['cryptoCurrency']].add_buy_price(e['price'])
+
 def discover():
 	global tokens
 
@@ -61,8 +72,10 @@ def discover():
 			save_token(t, quantity, 'spot')
 			
 	tokens = SpecialTokens.fix_tokens(tokens)
+	calculate_payment_history()
+
 
 init()
 discover()
-Mongo.save_dict(token_collection, tokens)
+# Mongo.save_dict(token_collection, tokens)
 UI.print_information(tokens)

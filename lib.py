@@ -45,6 +45,7 @@ class Binance:
 		BinanceAPI().set_api_secret(self._secrets.api_secret())
 
 import datetime
+from statistics import mean
 class Token:
 	def __init__(self, symbol, pair, price, spot_quantity=0, earn_quantity=0):
 		self._symbol = symbol
@@ -54,6 +55,10 @@ class Token:
 		self._earn_quantity = earn_quantity
 		self._balance = 0
 		self._timestamp = 0
+		
+		self._buy_prices = []
+		self._total_invested = 0
+		self._avg_buy_price = 0
 
 	def symbol(self):
 		return self._symbol
@@ -93,6 +98,19 @@ class Token:
 	def earn_balance(self):
 		return float(self._price) * float(self.earn_quantity())
 
+	def trade_pairs(self):
+		return "{}{}".format(self.symbol(), self.pair())
+
+	def total_invested(self):
+		return self._total_invested
+
+	def avg_buy_price(self):
+		if len(self._buy_prices) > 0: avg = mean(self._buy_prices)
+		else: avg = -1
+
+		self.set_avg_buy_price(avg)
+		return self._avg_buy_price
+
 	def set_symbol(self, new):
 		self._symbol = new
 
@@ -114,8 +132,17 @@ class Token:
 	def add_earn_quantity(self, new):
 		self.set_earn_quantity(float(self.earn_quantity()) + float(new))
 
+	def add_invested_quantity(self, new):
+		self._total_invested += float(new)
+
+	def add_buy_price(self, new):
+		self._buy_prices.append(float(new))
+
 	def set_pair(self, new):
 		self._pair = new
+
+	def set_avg_buy_price(self, new):
+		self._avg_buy_price = float(new)
 
 	def update_timestamp(self):
 		self._timestamp = datetime.datetime.now()
@@ -133,6 +160,8 @@ class Token:
 		result += " \"price\": {},".format(self.price())
 		result += " \"spot_quantity\": {},".format(self.spot_quantity())
 		result += " \"earn_quantity\": {},".format(self.earn_quantity())
+		result += " \"total_invested\": {},".format(self.total_invested())
+		result += " \"avg_buy_price\": {},".format(self.avg_buy_price())
 		result += " \"balance\": {},".format(self.global_balance())
 		result += " \"timestamp\": \"{}\"".format(self.timestamp())
 		result += "}"
@@ -207,6 +236,15 @@ class TokenManager:
 
 	def add(token):
 		TokenManager._tokens[token.symbol()] = token
+
+	def set_tokens(tokens):
+		TokenManager._tokens = tokens
+
+	def delete(token):
+		tokens = TokenManager.tokens()
+		if token.symbol() in tokens:
+			tokens.pop(token.symbol())
+			TokenManager.set_tokens(tokens)
 
 	def size():
 		return len(TokenManager._tokens)
