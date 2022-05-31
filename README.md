@@ -30,7 +30,6 @@ With some testing, I've noticed some tokens have diferent symbol depending if co
 
 ## Required Modules
 The following python modules are required. You can install them with `pip install module_name`:
-- python-binance
 - pymongo
 
 ## Configuration
