@@ -13,9 +13,12 @@ Some examples of already implemented metrics:
     - Current price
     - Owning quantity in Spot market
     - Owning quantity in Earn market
-    - :sparkles: Global balance for this token, including earn products and spot assets
+    - ✨ Global balance for this token, including earn products and spot assets
+    - ✨ Total funds spent in each token from card payment history
 
 When finished running, this script will save your updated token collection with all attributes in Mongo database.
+
+With some testing, I've noticed some tokens have diferent symbol depending if comes from spot or earn market. Some hardcode fixes are implemented to aggregate this values using spot's symbol.
 
 ## Incoming features
 - Run queries against db to obtain metrics 
